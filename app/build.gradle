@@ -20,10 +20,14 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.android.support:design:22.2.1'
-
+    compile 'com.echo:holographlibrary:1.0'
+    compile 'com.android.support:support-v4:22.2.1'
+    compile 'com.squareup.picasso:picasso:2.3.2'
+    compile 'com.jakewharton:butterknife:5.1.1'
     compile 'com.loopj.android:android-async-http:1.4.9'
+    compile 'com.beardedhen:androidbootstrap:2.0.0'
 }

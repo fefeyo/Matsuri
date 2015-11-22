@@ -1,0 +1,60 @@
+<LinearLayout
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_marginRight="@dimen/small"
+            android:id="@+id/thmbnail"
+            android:src="@drawable/icon"
+            android:layout_width="100dp"
+            android:layout_height="100dp" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/postdate"
+                android:text="0000年00月00日 00:00:00投稿"
+                android:textSize="@dimen/xs_text"
+                android:textColor="#95a5a6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/title"
+                android:text="タイトル"
+                android:textColor="#2c3e50"
+                android:textSize="@dimen/small_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/number"
+                android:text="counter"
+                android:textSize="@dimen/xs_text"
+                android:textColor="#3498db"
+                android:gravity="bottom"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <com.echo.holographlibrary.BarGraph
+        android:id="@+id/comment_graph"
+        android:layout_marginTop="@dimen/small"
+        android:layout_width="match_parent"
+        android:layout_height="200dp" />
+
+</LinearLayout>
