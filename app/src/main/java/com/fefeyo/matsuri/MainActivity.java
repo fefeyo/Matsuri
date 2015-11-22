@@ -4,12 +4,28 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 /**
  * Dwangoはてなハッカソン
@@ -34,10 +50,76 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Uri uri = Uri.parse(postUrl);
-                Intent i = new Intent(Intent.ACTION_VIEW,uri);
+                Intent i = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(i);
             }
         });
+
+        String s = "<thread thread=\"1431922032\" version=\"20061206\" res_from=\"-500\" />";
+        AsyncHttpClient client = new AsyncHttpClient();
+
+//        getComments(client, 1431922032, 12);
+        getNicoInfo(client, "sm26283665");
+    }
+
+    private void getNicoInfo(AsyncHttpClient client, String sm) {
+        client.addHeader("user_session", "user_session_1079501_483a0cfc79f2b319732854999d53370aacaf2bc9157089b2853eea745c4d670b");
+        client.get("http://flapi.nicovideo.jp/api/getflv/" + sm, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                try {
+                    Log.v("log", new String(responseBody, "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+            }
+        });
+    }
+
+    private void getComments(AsyncHttpClient client, int thread, int id) {
+        try {
+            client.post(getApplicationContext(),
+                    "http://msg.nicovideo.jp/" + id + "/api/",
+                    new StringEntity("<thread thread=\"" + thread + "\" version=\"20061206\" res_from=\"-500\" />"),
+                    "text/xml",
+                    new AsyncHttpResponseHandler() {
+                        @Override
+                        public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                            Log.v("log", "success");
+
+                            try {
+                                Document document = loadXMLFromString(new String(responseBody, "UTF-8"));
+                                NodeList nodeList = document.getElementsByTagName("chat");
+                                for (int i = 0; i < nodeList.getLength(); i++) {
+                                    Log.v("log", nodeList.item(i).getTextContent());
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Log.v("log", "parseError");
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+                        }
+                    }
+            );
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Document loadXMLFromString(String xml) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputSource is = new InputSource(new StringReader(xml));
+        return builder.parse(is);
     }
 
     @Override
