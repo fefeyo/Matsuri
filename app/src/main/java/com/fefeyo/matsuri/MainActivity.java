@@ -1,36 +1,10 @@
 package com.fefeyo.matsuri;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
-import android.graphics.Movie;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.entity.StringEntity;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -39,18 +13,28 @@ import com.fefeyo.matsuri.item.MovieItem;
 import com.fefeyo.matsuri.item.ResultAdapter;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.PersistentCookieStore;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
+import cz.msebera.android.httpclient.impl.cookie.BasicClientCookie;
 
 /**
  * Dwangoはてなハッカソン
@@ -78,6 +62,10 @@ public class MainActivity extends AppCompatActivity {
     @InjectView(R.id.result_list)
     ListView result_list;
 
+    int[] thread = {1431922032, 1444496827, 1435833374};
+    int[] id = {12, 0, 60};
+    int[][] vpos = new int[10][500];
+    int[][] vposss = new int[10][10];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,16 +74,13 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.inject(this);
         mClient = new AsyncHttpClient();
-
-        String s = "<thread thread=\"1431922032\" version=\"20061206\" res_from=\"-500\" />";
-        AsyncHttpClient client = new AsyncHttpClient();
-
-//        getComments(client, 1431922032, 12);
-        getNicoInfo(client, "sm26283665");
     }
 
     private void getNicoInfo(AsyncHttpClient client, String sm) {
-        client.addHeader("user_session", "user_session_1079501_483a0cfc79f2b319732854999d53370aacaf2bc9157089b2853eea745c4d670b");
+        PersistentCookieStore cookieStore = new PersistentCookieStore(this);
+        BasicClientCookie newCookie = new BasicClientCookie("user_session", "user_session_1079501_483a0cfc79f2b319732854999d53370aacaf2bc9157089b2853eea745c4d670b");
+        cookieStore.addCookie(newCookie);
+        client.setCookieStore(cookieStore);
         client.get("http://flapi.nicovideo.jp/api/getflv/" + sm, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -113,12 +98,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getComments(AsyncHttpClient client, int thread, int id) {
+    private void getComments(AsyncHttpClient client) throws UnsupportedEncodingException {
+            for (int i = 0; i < thread.length; i++) {
+                if (id[i] == 0) {
+                    getCommentsTask(client, "http://nmsg.nicovideo.jp/api/", new StringEntity("<thread thread=\"" + thread[i] + "\" version=\"20061206\" res_from=\"-500\" />"), i);
+                } else {
+                    getCommentsTask(client, "http://msg.nicovideo.jp/" + id[i] + "/api/", new StringEntity("<thread thread=\"" + thread[i] + "\" version=\"20061206\" res_from=\"-500\" />"), i);
+                }
+            }
+    }
+
+    private void getCommentsTask(AsyncHttpClient client, String url, StringEntity se, final int index) {
         try {
-            client.post(getApplicationContext(),
-                    "http://msg.nicovideo.jp/" + id + "/api/",
-                    new StringEntity("<thread thread=\"" + thread + "\" version=\"20061206\" res_from=\"-500\" />"),
-                    "text/xml",
+            client.post(getApplicationContext(), url, se, "text/xml",
                     new AsyncHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -127,12 +119,28 @@ public class MainActivity extends AppCompatActivity {
                             try {
                                 Document document = loadXMLFromString(new String(responseBody, "UTF-8"));
                                 NodeList nodeList = document.getElementsByTagName("chat");
+                                int max = 0;
                                 for (int i = 0; i < nodeList.getLength(); i++) {
-                                    Log.v("log", nodeList.item(i).getTextContent());
+                                    String s = nodeList.item(i).getAttributes().getNamedItem("vpos").getTextContent();
+                                    if (s.replaceAll("[^0-9]","").equals("")) continue;
+                                    vpos[index][i] = Integer.parseInt(s.replaceAll("[^0-9]",""));
+                                    if (max < vpos[index][i]) {
+                                        max = vpos[index][i];
+                                    }
                                 }
+                                max /= 10;
+                                for (int i = 0; i < nodeList.getLength(); i++) {
+                                    if (vpos[index][i]/max == 10) continue;
+                                    vposss[index][vpos[index][i]/max]++;
+                                }
+                                Log.v("log", index + "ばんめ");
+                                Log.v("log", vposss[index][0] + "");
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                                Log.v("log", e.getMessage());
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                Log.v("log", "parseError");
+                                Log.v("log", e.getMessage());
                             }
                         }
 
@@ -142,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
             );
-        } catch (UnsupportedEncodingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -172,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                             final String result = new String(responseBody, "UTF-8");
                             final JSONObject parent = new JSONObject(result);
                             final JSONArray datas = parent.getJSONArray("data");
-                            for(int i = 0; i < datas.length(); i++){
+                            for (int i = 0; i < datas.length(); i++) {
                                 final JSONObject data = datas.getJSONObject(i);
                                 final MovieItem item = new MovieItem();
                                 item.setMovieUrl(VIDEO_URL + data.getString("contentId"));
@@ -233,5 +241,11 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.search_button)
     void onClick(final View v) {
         searchVideo(mClient, search_text.getText().toString());
+        try {
+            getComments(mClient);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        getNicoInfo(mClient, "sm26283665");
     }
 }
