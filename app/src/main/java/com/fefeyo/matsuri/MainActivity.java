@@ -75,8 +75,6 @@ public class MainActivity extends AppCompatActivity {
 
     @InjectView(R.id.search_text)
     EditText search_text;
-    @InjectView(R.id.search_button)
-    BootstrapButton search_button;
     @InjectView(R.id.result_list)
     ListView result_list;
 
@@ -214,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
                 "targets=title",
                 "fields=contentId,title,description,viewCounter,startTime,thumbnailUrl",
                 "_sort=-viewCounter",
+                "_offset=0",
                 "_limit=10",
                 "_context=Matsuri"
         };

@@ -25,7 +25,7 @@
             <TextView
                 android:id="@+id/postdate"
                 android:text="0000年00月00日 00:00:00投稿"
-                android:textSize="@dimen/xs_text"
+                android:textSize="10dp"
                 android:textColor="#95a5a6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -55,6 +55,6 @@
         android:id="@+id/comment_graph"
         android:layout_marginTop="@dimen/small"
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="100dp" />
 
 </LinearLayout>
