@@ -12,7 +12,7 @@ public class MovieItem {
     private String thmbnailUrl;
     private String number;
     private String movieUrl;
-    private HashMap<Integer, ArrayList<String>> comments;
+    private int[] comments;
 
     public String getTitle() {
         return title;
@@ -54,11 +54,11 @@ public class MovieItem {
         this.movieUrl = movieUrl;
     }
 
-    public HashMap<Integer, ArrayList<String>> getComments() {
+    public int[] getComments() {
         return comments;
     }
 
-    public void setComments(HashMap<Integer, ArrayList<String>> comments) {
+    public void setComments(int[] comments) {
         this.comments = comments;
     }
 }

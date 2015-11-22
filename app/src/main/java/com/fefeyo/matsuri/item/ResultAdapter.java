@@ -3,6 +3,7 @@ package com.fefeyo.matsuri.item;
 import android.content.Context;
 import android.graphics.Color;
 import android.text.Layout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,7 @@ import static butterknife.ButterKnife.findById;
 /**
  * Created by USER on 2015/11/22.
  */
-public class ResultAdapter extends ArrayAdapter<MovieItem> {
+public class ResultAdapter extends ArrayAdapter<MovieItem> implements BarGraph.OnBarClickedListener{
 
     private LayoutInflater inflater;
 
@@ -48,20 +49,19 @@ public class ResultAdapter extends ArrayAdapter<MovieItem> {
         Picasso.with(getContext()).load(item.getThmbnailUrl()).into(thmbnail);
         final BarGraph graph = findById(convertView, R.id.comment_graph);
         buildGraph(graph, item.getComments());
+        graph.setOnBarClickedListener(this);
 
         return convertView;
     }
 
-    private void buildGraph(final BarGraph graph, final HashMap<Integer, ArrayList<String>> comments) {
+    private void buildGraph(final BarGraph graph, final int[] comments) {
         if (null != comments) {
             final ArrayList<Bar> bars = new ArrayList<>();
-            int position = 0;
-            for (int i = 0; i < comments.size(); i++) {
+            for (int i = 1; i < comments.length + 1;i++) {
                 final Bar bar = new Bar();
                 bar.setColor(Color.RED);
-                bar.setName(position + "秒");
-                bar.setValue(comments.get(position).size());
-                position += 30;
+                bar.setName(i * 30 + "秒");
+                bar.setValue(comments[i]);
             }
             /**
              * Bar bar = new Bar();
@@ -77,8 +77,14 @@ public class ResultAdapter extends ArrayAdapter<MovieItem> {
                 bar.setColor(Color.RED);
                 bar.setName("さんぷる");
                 bar.setValue(i * 20);
+                bars.add(bar);
             }
             graph.setBars(bars);
         }
+    }
+
+    @Override
+    public void onClick(int i) {
+        Log.d("クリックされたのは", "これ→[" + i + "]");
     }
 }
